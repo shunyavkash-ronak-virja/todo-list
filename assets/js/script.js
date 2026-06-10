@@ -56,9 +56,7 @@ function addTodoToDOM(taskText) {
 // Save todo to localStorage
 function saveTodo(task) {
   let todos = getTodos();
-
   todos.push(task);
-
   localStorage.setItem("todos", JSON.stringify(todos));
 }
 
@@ -70,7 +68,6 @@ function getTodos() {
 // Load todos on refresh
 function loadTodos() {
   const todos = getTodos();
-
   todos.forEach((todo) => {
     addTodoToDOM(todo);
   });
@@ -79,36 +76,27 @@ function loadTodos() {
 // Delete Todo
 function deleteTodo(button) {
   const listItem = button.parentElement.parentElement;
-
   const taskText = listItem.querySelector(".todo-list-task").innerText;
-
   removeTodoFromStorage(taskText);
-
   listItem.remove();
 }
 
 // Remove todo from localStorage
 function removeTodoFromStorage(taskText) {
   let todos = getTodos();
-
   todos = todos.filter((todo) => todo !== taskText);
-
   localStorage.setItem("todos", JSON.stringify(todos));
 }
 
 // Edit Todo
 function editTodo(button) {
   const listItem = button.parentElement.parentElement;
-
   const taskSpan = listItem.querySelector(".todo-list-task");
-
   const oldText = taskSpan.innerText;
-
   const newText = prompt("Edit your task:", oldText);
 
   if (newText !== null && newText.trim() !== "") {
     taskSpan.innerText = newText.trim();
-
     updateTodoInStorage(oldText, newText.trim());
   }
 }
@@ -116,7 +104,6 @@ function editTodo(button) {
 // Update localStorage after edit
 function updateTodoInStorage(oldText, newText) {
   let todos = getTodos();
-
   todos = todos.map((todo) => {
     return todo === oldText ? newText : todo;
   });
