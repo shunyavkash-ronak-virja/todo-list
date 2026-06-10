@@ -3,14 +3,32 @@ const addBtn = document.querySelector(".todo-add-btn");
 const todoList = document.querySelector(".todo-list");
 const clearAllBtn = document.querySelector(".clear-all-btn");
 
+// Load todos when page loads
+document.addEventListener("DOMContentLoaded", loadTodos);
+
+// Add Todo
 addBtn.addEventListener("click", () => {
   const taskText = todoInput.value.trim();
+
   if (taskText === "") {
     alert("Please enter a task!");
     return;
   }
 
-  // Create the new li HTML structure using template literals
+  addTodoToDOM(taskText);
+  saveTodo(taskText);
+
+  todoInput.value = "";
+});
+
+// Clear All
+clearAllBtn.addEventListener("click", () => {
+  todoList.innerHTML = "";
+  localStorage.removeItem("todos");
+});
+
+// Function to create todo HTML
+function addTodoToDOM(taskText) {
   const newTodoHTML = `
         <li>
             <span class="todo-list-task">${taskText}</span>
@@ -30,36 +48,78 @@ addBtn.addEventListener("click", () => {
                 </button>
             </div>
         </li>
-    `;
+  `;
 
-  // Append the new item structure using innerHTML
-  todoList.innerHTML += newTodoHTML;
+  todoList.insertAdjacentHTML("beforeend", newTodoHTML);
+}
 
-  // Clear input field after adding
-  todoInput.value = "";
-});
+// Save todo to localStorage
+function saveTodo(task) {
+  let todos = getTodos();
 
-clearAllBtn.addEventListener("click", () => {
-  todoList.innerHTML = "";
-});
+  todos.push(task);
 
-// Function to handle task deletion
+  localStorage.setItem("todos", JSON.stringify(todos));
+}
+
+// Get todos from localStorage
+function getTodos() {
+  return JSON.parse(localStorage.getItem("todos")) || [];
+}
+
+// Load todos on refresh
+function loadTodos() {
+  const todos = getTodos();
+
+  todos.forEach((todo) => {
+    addTodoToDOM(todo);
+  });
+}
+
+// Delete Todo
 function deleteTodo(button) {
-  // button.parentElement is the .actions div, its parent is the <li>
   const listItem = button.parentElement.parentElement;
+
+  const taskText = listItem.querySelector(".todo-list-task").innerText;
+
+  removeTodoFromStorage(taskText);
+
   listItem.remove();
 }
 
-// Function to handle task editing
+// Remove todo from localStorage
+function removeTodoFromStorage(taskText) {
+  let todos = getTodos();
+
+  todos = todos.filter((todo) => todo !== taskText);
+
+  localStorage.setItem("todos", JSON.stringify(todos));
+}
+
+// Edit Todo
 function editTodo(button) {
   const listItem = button.parentElement.parentElement;
+
   const taskSpan = listItem.querySelector(".todo-list-task");
 
-  // Prompt the user for the new text value
-  const currentText = taskSpan.innerText;
-  const newText = prompt("Edit your task:", currentText);
+  const oldText = taskSpan.innerText;
+
+  const newText = prompt("Edit your task:", oldText);
 
   if (newText !== null && newText.trim() !== "") {
     taskSpan.innerText = newText.trim();
+
+    updateTodoInStorage(oldText, newText.trim());
   }
+}
+
+// Update localStorage after edit
+function updateTodoInStorage(oldText, newText) {
+  let todos = getTodos();
+
+  todos = todos.map((todo) => {
+    return todo === oldText ? newText : todo;
+  });
+
+  localStorage.setItem("todos", JSON.stringify(todos));
 }
