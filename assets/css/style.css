@@ -1,5 +1,6 @@
 :root {
   --black: #000000;
+  --black-06: #00000099;
   --white: #ffffff;
   --grey: #f3f4f6;
 }
@@ -79,6 +80,10 @@ li {
   flex: 1;
 }
 
+.hidden {
+  display: none;
+}
+
 /* ----- To-Do List ----- */
 .todo-section {
   width: 100%;
@@ -112,11 +117,53 @@ li {
   transition: all 0.3s ease-in-out;
 }
 
-.todo-input:focus,
-.todo-input:focus-visible,
-.todo-input:hover {
+.todo-input:is(:focus, :focus-visible, :hover) {
   outline: none;
   border-color: var(--black);
+}
+
+.todo-input.error {
+  border-color: red;
+}
+
+.todo-input.shake {
+  animation: shake 0.4s;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-10px);
+  }
+
+  40% {
+    transform: translateX(10px);
+  }
+
+  60% {
+    transform: translateX(-10px);
+  }
+
+  80% {
+    transform: translateX(10px);
+  }
+}
+
+.todo-list-task {
+  width: 80%;
+}
+
+.todo-edit-input {
+  width: 100%;
+  border: none;
+}
+
+.todo-edit-input:is(:focus, :focus-visible, :hover) {
+  outline: none;
 }
 
 .todo-add-icon {

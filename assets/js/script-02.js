@@ -3,6 +3,7 @@ const addBtn = document.querySelector(".todo-add-btn");
 const todoList = document.querySelector(".todo-list");
 const clearAllBtn = document.querySelector(".clear-all-btn");
 const todoTemplate = document.querySelector("#todo-template");
+const errorMessage = document.querySelector(".todo-error-message");
 
 // Load todos when page loads
 document.addEventListener("DOMContentLoaded", loadTodos);
@@ -11,7 +12,11 @@ document.addEventListener("DOMContentLoaded", loadTodos);
 function addTodo() {
   const taskText = todoInput.value.trim();
   if (taskText === "") {
-    alert("Please enter a task!");
+    todoInput.classList.add("error");
+    todoInput.classList.add("shake");
+    setTimeout(() => {
+      todoInput.classList.remove("shake");
+    }, 300);
     return;
   }
   addTodoToDOM(taskText);
@@ -24,6 +29,14 @@ todoInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
     addTodo();
+  }
+});
+
+todoInput.addEventListener("input", () => {
+  const value = todoInput.value.trim();
+  if (value !== "") {
+    todoInput.classList.remove("error");
+    errorMessage.classList.add("hidden");
   }
 });
 
@@ -76,12 +89,70 @@ function editTodo(button) {
   const listItem = button.parentElement.parentElement;
   const taskSpan = listItem.querySelector(".todo-list-task");
   const oldText = taskSpan.innerText;
-  const newText = prompt("Edit your task:", oldText);
+  const saveBtn = listItem.querySelector(".todo-save-btn");
+  const cancelBtn = listItem.querySelector(".todo-cancel-btn");
+  const deleteBtn = listItem.querySelector(".todo-delete-btn");
 
-  if (newText !== null && newText.trim() !== "") {
-    taskSpan.innerText = newText.trim();
-    updateTodoInStorage(oldText, newText.trim());
-  }
+  taskSpan.innerHTML = ` <input type="text" class="todo-edit-input" value="${oldText}">
+  `;
+  const editInput = taskSpan.querySelector(".todo-edit-input");
+  editInput.focus();
+  editInput.select();
+  button.classList.add("hidden");
+  deleteBtn.classList.add("hidden");
+  saveBtn.classList.remove("hidden");
+  cancelBtn.classList.remove("hidden");
+
+  saveBtn.setAttribute("onclick", "saveTodoEdit(this)");
+  cancelBtn.setAttribute("onclick", `cancelEdit(this, '${oldText}')`);
+
+  editInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      saveBtn.click();
+    }
+
+    if (event.key === "Escape") {
+      cancelBtn.click();
+    }
+  });
+}
+
+function saveTodoEdit(button) {
+  const listItem = button.parentElement.parentElement;
+  const input = listItem.querySelector(".todo-edit-input");
+  const newText = input.value.trim();
+
+  if (!newText) return;
+
+  const oldText = input.defaultValue;
+  updateTodoInStorage(oldText, newText);
+  listItem.querySelector(".todo-list-task").textContent = newText;
+
+  const deleteBtn = listItem.querySelector(".todo-delete-btn");
+  const saveBtn = button;
+  const editBtn = listItem.querySelector(".todo-edit-btn");
+  const cancelBtn = listItem.querySelector(".todo-cancel-btn");
+
+  saveBtn.classList.add("hidden");
+  cancelBtn.classList.add("hidden");
+  editBtn.classList.remove("hidden");
+  deleteBtn.classList.remove("hidden");
+}
+
+function cancelEdit(button, oldText) {
+  const listItem = button.parentElement.parentElement;
+
+  listItem.querySelector(".todo-list-task").textContent = oldText;
+
+  const editBtn = listItem.querySelector(".todo-edit-btn");
+
+  const cancelBtn = button;
+  const deleteBtn = listItem.querySelector(".todo-delete-btn");
+  const saveBtn = listItem.querySelector(".todo-save-btn");
+  saveBtn.classList.add("hidden");
+  cancelBtn.classList.add("hidden");
+  editBtn.classList.remove("hidden");
+  deleteBtn.classList.remove("hidden");
 }
 
 // Update localStorage after edit
