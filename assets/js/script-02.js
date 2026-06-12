@@ -21,23 +21,10 @@ function addTodo() {
 addBtn.addEventListener("click", addTodo);
 todoInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
+    event.preventDefault();
     addTodo();
   }
 });
-// addBtn.addEventListener("click", () => {
-//   const taskText = todoInput.value.trim();
-
-//   if (taskText === "") {
-//     alert("Please enter a task!");
-//     return;
-//   }
-
-//   addTodoToDOM(taskText);
-//   saveTodo(taskText);
-//   toggleClearButton();
-
-//   todoInput.value = "";
-// });
 
 // Function to create todo HTML
 function addTodoToDOM(taskText) {
