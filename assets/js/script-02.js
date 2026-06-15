@@ -24,6 +24,7 @@ function addTodo() {
   toggleClearButton();
   todoInput.value = "";
 }
+
 addBtn.addEventListener("click", addTodo);
 todoInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
