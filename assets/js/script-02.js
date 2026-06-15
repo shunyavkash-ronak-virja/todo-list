@@ -3,7 +3,6 @@ const addBtn = document.querySelector(".todo-add-btn");
 const todoList = document.querySelector(".todo-list");
 const clearAllBtn = document.querySelector(".clear-all-btn");
 const todoTemplate = document.querySelector("#todo-template");
-const errorMessage = document.querySelector(".todo-error-message");
 
 // Load todos when page loads
 document.addEventListener("DOMContentLoaded", loadTodos);
@@ -19,8 +18,8 @@ function addTodo() {
     }, 300);
     return;
   }
-  addTodoToDOM(taskText);
-  saveTodo(taskText);
+  const newTodo = saveTodo(taskText);
+  addTodoToDOM(newTodo);
   toggleClearButton();
   todoInput.value = "";
 }
@@ -37,22 +36,28 @@ todoInput.addEventListener("input", () => {
   const value = todoInput.value.trim();
   if (value !== "") {
     todoInput.classList.remove("error");
-    errorMessage.classList.add("hidden");
   }
 });
 
 // Function to create todo HTML
-function addTodoToDOM(taskText) {
+function addTodoToDOM(todo) {
   const todoClone = todoTemplate.content.cloneNode(true);
-  todoClone.querySelector(".todo-list-task").textContent = taskText;
+  const li = todoClone.querySelector("li");
+  li.dataset.id = todo.id;
+  todoClone.querySelector(".todo-list-task").textContent = todo.text;
   todoList.appendChild(todoClone);
 }
 
 // Save todo to localStorage
 function saveTodo(task) {
   let todos = getTodos();
-  todos.push(task);
+  const newTodo = {
+    id: Date.now(),
+    text: task,
+  };
+  todos.push(newTodo);
   localStorage.setItem("todos", JSON.stringify(todos));
+  return newTodo;
 }
 
 // Get todos from localStorage
@@ -71,17 +76,17 @@ function loadTodos() {
 
 // Delete Todo
 function deleteTodo(button) {
-  const listItem = button.parentElement.parentElement;
-  const taskText = listItem.querySelector(".todo-list-task").innerText;
-  removeTodoFromStorage(taskText);
+  const listItem = button.closest("li");
+  const id = Number(listItem.dataset.id);
+  removeTodoFromStorage(id);
   listItem.remove();
   toggleClearButton();
 }
 
 // Remove todo from localStorage
-function removeTodoFromStorage(taskText) {
+function removeTodoFromStorage(id) {
   let todos = getTodos();
-  todos = todos.filter((todo) => todo !== taskText);
+  todos = todos.filter((todo) => todo.id !== id);
   localStorage.setItem("todos", JSON.stringify(todos));
 }
 
@@ -125,8 +130,8 @@ function saveTodoEdit(button) {
 
   if (!newText) return;
 
-  const oldText = input.defaultValue;
-  updateTodoInStorage(oldText, newText);
+  const id = Number(listItem.dataset.id);
+  updateTodoInStorage(id, newText);
   listItem.querySelector(".todo-list-task").textContent = newText;
 
   const deleteBtn = listItem.querySelector(".todo-delete-btn");
@@ -157,10 +162,13 @@ function cancelEdit(button, oldText) {
 }
 
 // Update localStorage after edit
-function updateTodoInStorage(oldText, newText) {
+function updateTodoInStorage(id, newText) {
   let todos = getTodos();
   todos = todos.map((todo) => {
-    return todo === oldText ? newText : todo;
+    if (todo.id === id) {
+      todo.text = newText;
+    }
+    return todo;
   });
 
   localStorage.setItem("todos", JSON.stringify(todos));
@@ -168,12 +176,8 @@ function updateTodoInStorage(oldText, newText) {
 
 // Clear All
 function toggleClearButton() {
-  const todos = getTodos();
-  if (todos.length > 1) {
-    clearAllBtn.style.display = "block";
-  } else {
-    clearAllBtn.style.display = "none";
-  }
+  const totalTasks = todoList.querySelectorAll("li").length;
+  clearAllBtn.style.display = totalTasks > 1 ? "block" : "none";
 }
 
 clearAllBtn.addEventListener("click", () => {
